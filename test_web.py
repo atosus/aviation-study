@@ -19,20 +19,29 @@ st.markdown("""
 
 # 2. Strong Voice Function (iOS/Android Force Play)
 def speak(text):
+    # 아이폰/안드로이드의 최신 보안 정책을 뚫기 위한 강화된 로직
     js_code = f"""
     <script>
     (function() {{
-        window.speechSynthesis.cancel();
-        var msg = new SpeechSynthesisUtterance("{text.replace('"', '').replace("'", "")}");
+        window.speechSynthesis.cancel(); // 이전 소리 초기화
+        
+        var msg = new SpeechSynthesisUtterance();
+        msg.text = "{text.replace('"', '').replace("'", "")}";
         msg.lang = 'en-US';
-        msg.rate = 0.85;
+        msg.rate = 0.85; // 조금 더 명확하게 들리도록 속도 조절
+        msg.volume = 1.0; // 볼륨 최대치 설정
+        
+        // 브라우저에게 "사용자가 버튼을 눌렀으니 소리를 재생해!"라고 명시적 명령
         window.speechSynthesis.speak(msg);
+        
+        // 아이폰 사파리 특유의 버그 방지용 (빈 음성 재생으로 엔진 깨우기)
+        if (window.speechSynthesis.speaking === false) {{
+            window.speechSynthesis.resume();
+        }}
     }})();
     </script>
     """
-    st.components.v1.html(js_code, height=0)
-
-# Audio Wake-up Helper
+    st.components.v1.html(js_code, height=0)# Audio Wake-up Helper
 def wake_up_audio():
     js_wake = """
     <script>
